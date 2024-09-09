@@ -1,0 +1,675 @@
+---
+title: "Revised Graphs"
+output: html_document
+date: "2024-06-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(forcats)
+library(haven)
+library(stringr)
+```
+
+```{r}
+r5 = read_sav("/Users/andyouyang/Documents/research/sudan/data/afrobarometer_sud_r5_2013.sav")
+r6 = read_sav("/Users/andyouyang/Documents/research/sudan/data/afrobarometer_sud_r6_2015.sav")
+r7 = read_sav("/Users/andyouyang/Documents/research/sudan/data/afrobarometer_sud_r7_2018.sav")
+r8 = read_sav("/Users/andyouyang/Documents/research/sudan/data/afrobarometer_sud_r8_2021.sav")
+r9 = read_sav("/Users/andyouyang/Documents/research/sudan/data/afrobarometer_sud_r9_2022.sav")
+
+wave <- c("Wave 5 (2012)", "Wave 6 (2015)", "Wave 7 (2018)", "Wave 8 (2021)", "Wave 9 (2022)")
+
+# change the year
+```
+
+# approval of one party rule, military rule, one man rule
+
+```{r}
+# get rid of refused, dont know, missing
+r9_dupe <- subset(r9, !Q22A %in% c(8,9,-1))
+r9_dupe <- subset(r9, !Q22B %in% c(8,9,-1))
+r9_dupe <- subset(r9, !Q22C %in% c(8,9,-1))
+
+r8_dupe <- subset(r8, !Q20A %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q20B %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q20C %in% c(8,9,-1))
+
+r7_dupe <- subset(r7, !Q27A %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q27B %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q27C %in% c(8,9,-1))
+
+r6_dupe <- subset(r6, !Q28A %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q28B %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q28C %in% c(8,9,-1))
+
+r5_dupe <- subset(r5, !Q31A %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q31B %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q31C %in% c(8,9,-1))
+```
+
+## one party rule 
+
+``` {r}
+wave5 = table(r5_dupe$Q31A) / sum(table(r5_dupe$Q31A))
+wave6 = table(r6_dupe$Q28A) / sum(table(r6_dupe$Q28A))
+wave7 = table(r7_dupe$Q27A) / sum(table(r7_dupe$Q27A))
+wave8 = table(r8_dupe$Q20A) / sum(table(r8_dupe$Q20A))
+wave9 = table(r9_dupe$Q22A) / sum(table(r9_dupe$Q22A))
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+five <- c(as.numeric(wave5["5"]), as.numeric(wave6["5"]), 
+           as.numeric(wave7["5"]), as.numeric(wave8["5"]), as.numeric(wave9["5"]))
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double(), Five = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i], Five = five[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "Disapprove"
+rejone_melt[rejone_melt$variable == 'Four' | rejone_melt$variable == 'Five',]$Response <- "Approve"
+rejone_melt[rejone_melt$variable == 'Three',]$Response <- "Neither"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly disapprove", 
+                                "Disapprove",
+                                "Neither",
+                                "Approve",
+                                "Strongly approve"), 
+                      values = c("brown3", "tomato", "gold", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Approval of One Party Rule Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/one_party_rule_approval_over_time.png", bg = "white", dpi=700))
+```
+
+## military rule
+ 
+``` {r}
+wave5 = table(r5_dupe$Q31B) / sum(table(r5_dupe$Q31B))
+wave6 = table(r6_dupe$Q28B) / sum(table(r6_dupe$Q28B))
+wave7 = table(r7_dupe$Q27B) / sum(table(r7_dupe$Q27B))
+wave8 = table(r8_dupe$Q20B) / sum(table(r8_dupe$Q20B))
+wave9 = table(r9_dupe$Q22B) / sum(table(r9_dupe$Q22B))
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+five <- c(as.numeric(wave5["5"]), as.numeric(wave6["5"]), 
+           as.numeric(wave7["5"]), as.numeric(wave8["5"]), as.numeric(wave9["5"]))
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double(), Five = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i], Five = five[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "Disapprove"
+rejone_melt[rejone_melt$variable == 'Four' | rejone_melt$variable == 'Five',]$Response <- "Approve"
+rejone_melt[rejone_melt$variable == 'Three',]$Response <- "Neither"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly disapprove", 
+                                "Disapprove",
+                                "Neither",
+                                "Approve",
+                                "Strongly approve"), 
+                      values = c("brown3", "tomato", "gold", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Approval of Military Rule Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/military_rule_approval_over_time.png", bg = "white", dpi=700))
+```
+
+## one man rule
+
+``` {r}
+wave5 = table(r5_dupe$Q31C) / sum(table(r5_dupe$Q31C))
+wave6 = table(r6_dupe$Q28C) / sum(table(r6_dupe$Q28C))
+wave7 = table(r7_dupe$Q27C) / sum(table(r7_dupe$Q27C))
+wave8 = table(r8_dupe$Q20C) / sum(table(r8_dupe$Q20C))
+wave9 = table(r9_dupe$Q22C) / sum(table(r9_dupe$Q22C))
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+five <- c(as.numeric(wave5["5"]), as.numeric(wave6["5"]), 
+           as.numeric(wave7["5"]), as.numeric(wave8["5"]), as.numeric(wave9["5"]))
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double(), Five = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i], Five = five[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "Disapprove"
+rejone_melt[rejone_melt$variable == 'Four' | rejone_melt$variable == 'Five',]$Response <- "Approve"
+rejone_melt[rejone_melt$variable == 'Three',]$Response <- "Neither"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly disapprove", 
+                                "Disapprove",
+                                "Neither",
+                                "Approve",
+                                "Strongly approve"), 
+                      values = c("brown3", "tomato", "gold", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Approval of One Man Rule Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/one_man_rule_approval_over_time.png", bg = "white", dpi=700))
+```
+
+# democracy
+
+## support for democracy
+
+```{r}
+r9_dupe <- subset(r9, !Q23 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q21 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q28 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q30 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q32 %in% c(8,9,-1))
+```
+
+```{r}
+wave5 = table(r5_dupe$Q32) / sum(table(r5_dupe$Q32))
+wave6 = table(r6_dupe$Q30) / sum(table(r6_dupe$Q30))
+wave7 = table(r7_dupe$Q28) / sum(table(r7_dupe$Q28))
+wave8 = table(r8_dupe$Q21) / sum(table(r8_dupe$Q21))
+wave9 = table(r9_dupe$Q23) / sum(table(r9_dupe$Q23))
+
+df <- data.frame(Wave=character(), One=double(), Two=double(), Three=double())
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+
+for (i in 1:length(wave)) {
+  df <- rbind(df, data.frame(Wave=wave[i], One=one[i], Two=two[i], Three=three[i]))
+}
+
+print(df)
+
+```
+
+
+```{r}
+data_long <- reshape2::melt(df, id.vars = "Wave")
+
+ggplot(data_long, aes(x = Wave, y = value, fill = variable)) +
+    geom_bar(stat = "identity", position = "fill") +
+    labs(title = "Percent Stacked Bar Graph of Reponses to Support for Democracy \nOver Time in Sudan", 
+         x = "Afrobarometer Round Number & Year", 
+         y = "Proportion of Respondents") +
+    scale_fill_manual(labels = c("Does not matter", 
+                                  "Sometimes non-democratic \npreferable",
+                                  "Democracy preferable"), 
+                      values = c("tomato", "gold", "darkolivegreen3")) +
+    theme_minimal() +
+    guides(fill=guide_legend("Response")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/support_democracy_over_time.png", bg = "white", dpi=700))
+```
+
+## extent of democracy
+
+```{r}
+r9_dupe <- subset(r9, !Q30 %in% c(8,9,98,-1))
+r8_dupe <- subset(r8, !Q36 %in% c(8,9,98,-1))
+r7_dupe <- subset(r7, !Q35 %in% c(8,9,98,-1))
+r6_dupe <- subset(r6, !Q40 %in% c(8,9,98,-1))
+r5_dupe <- subset(r5, !Q42 %in% c(8,9,98,-1))
+
+wave5 = table(r5_dupe$Q42) / sum(table(r5_dupe$Q42))
+wave6 = table(r6_dupe$Q40) / sum(table(r6_dupe$Q40))
+wave7 = table(r7_dupe$Q35) / sum(table(r7_dupe$Q35))
+wave8 = table(r8_dupe$Q36) / sum(table(r8_dupe$Q36))
+wave9 = table(r9_dupe$Q30) / sum(table(r9_dupe$Q30))
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One',]$Response <- "No"
+rejone_melt[rejone_melt$variable == 'Two' | rejone_melt$variable == 'Three' | rejone_melt$variable == 'Four',]$Response <- "Yes"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Not a democracy", 
+                               "A democracy with\nmajor problems", 
+                               "A democracy with\nminor problems",
+                               "A full democracy"), 
+                      values = c("tomato", "gold", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Extent of Democracy Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/extent_of_democracy_over_time.png", bg = "white", dpi=700))
+```
+
+## satisfaction
+
+```{r}
+r9_dupe <- subset(r9, !Q31 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q37 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q36 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q41 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q43 %in% c(8,9,-1))
+
+wave5 = table(r5_dupe$Q43) / sum(table(r5_dupe$Q43))
+wave6 = table(r6_dupe$Q41) / sum(table(r6_dupe$Q41))
+wave7 = table(r7_dupe$Q36) / sum(table(r7_dupe$Q36))
+wave8 = table(r8_dupe$Q37) / sum(table(r8_dupe$Q37))
+wave9 = table(r9_dupe$Q31) / sum(table(r9_dupe$Q31))
+
+zero <- c(as.numeric(wave5["0"]), as.numeric(wave6["0"]), 
+           as.numeric(wave7["0"]), as.numeric(wave8["0"]), as.numeric(wave9["0"]))
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+
+
+rejone <- data.frame(Wave = character(), Zero = double(), One = double(), Two = double(), Three = double(), Four = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], Zero = zero[i], One = one[i], Two = two[i], Three = three[i], Four = four[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "Not Satisfied"
+rejone_melt[rejone_melt$variable == 'Three' | rejone_melt$variable == 'Four',]$Response <- "Satisfied"
+rejone_melt[rejone_melt$variable == 'Zero',]$Response <- "No"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Not a democracy", 
+                                "Not at all satisfied",
+                                "Not very satisfied",
+                                "Fairly satisfied",
+                                "Very Satisfied"), 
+                      values = c("brown3", "tomato", "gold", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Satisfaction with Democracy Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/satisfaction_democracy_over_time.png", bg = "white", dpi=700))
+```
+
+## govt 1/2/n
+ 
+```{r}
+r9_dupe <- subset(r9, !Q18 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q22 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q29 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q31 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q33 %in% c(8,9,-1))
+# r4_dupe <- subset(r4, !Q43 %in% c(8,9,-1)) # question not in wave 4
+# does not exist for r4 and previous waves
+
+recode_statements <- function(data, col, recode_rules) {
+  data[[col]] <- factor(data[[col]])
+  data[[col]] <- fct_recode(data[[col]], !!!recode_rules)
+  data[[col]] <- as.numeric(as.character(data[[col]]))
+  return(data)
+}
+
+# adjustment made to ordering
+# final ordering is as follows
+# 1 - strongly agree with statement 1
+# 2 - agree with statement 1
+# 3 - agree with neither (neutral)
+# 4 - agree with statement 2
+# 5 - strongly agree with statement 2
+
+statement_rules <- list(
+  "1" = "1",
+  "2" = "2",
+  "4" = "3",
+  "5" = "4",
+  "3" = "5",
+  "8" = "8",
+  "9" = "9",
+  "-1" = "-1")
+
+r9_dupe <- recode_statements(r9_dupe, "Q18", statement_rules)
+r8_dupe <- recode_statements(r8_dupe, "Q22", statement_rules)
+r7_dupe <- recode_statements(r7_dupe, "Q29", statement_rules)
+r6_dupe <- recode_statements(r6_dupe, "Q31", statement_rules)
+r5_dupe <- recode_statements(r5_dupe, "Q33", statement_rules)
+```
+
+          
+```{r}
+wave5 = table(r5_dupe$Q33) / sum(table(r5_dupe$Q33))
+wave6 = table(r6_dupe$Q31) / sum(table(r6_dupe$Q31))
+wave7 = table(r7_dupe$Q29) / sum(table(r7_dupe$Q29))
+wave8 = table(r8_dupe$Q22) / sum(table(r8_dupe$Q22))
+wave9 = table(r9_dupe$Q18) / sum(table(r9_dupe$Q18))
+
+wave <- c("Wave 5 (2012)", "Wave 6 (2015)", "Wave 7 (2018)", "Wave 8 (2021)", "Wave 9 (2022)")
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+five <- c(as.numeric(wave5["5"]), as.numeric(wave6["5"]), 
+           as.numeric(wave7["5"]), as.numeric(wave8["5"]), as.numeric(wave9["5"]))
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double(), Five = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i], Five = five[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "1"
+rejone_melt[rejone_melt$variable == 'Four' | rejone_melt$variable == 'Five',]$Response <- "2"
+rejone_melt[rejone_melt$variable == 'Three',]$Response <- "No"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly agree with Statement 1", 
+                               "Agree with Statement 1", 
+                               "Agree with neither",
+                               "Agree with Statement 2",
+                               "Strongly agree with Statement 2"), 
+                      values = c("brown3", "tomato", "seashell3", "cornflowerblue", "royalblue4")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Responses to Government gets things done (Statement 1) vs. \naccountable to citizens (Statement 2) Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/govt_over_time.png", bg = "white", dpi=700))
+```
+
+## leaders 1/2/n
+
+```{r}
+r9_dupe <- subset(r9, !Q24 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q24 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q30 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q32 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q34 %in% c(8,9,-1))
+
+
+recode_statements <- function(data, col, recode_rules) {
+  data[[col]] <- factor(data[[col]])
+  data[[col]] <- fct_recode(data[[col]], !!!recode_rules)
+  data[[col]] <- as.numeric(as.character(data[[col]]))
+  return(data)
+}
+
+# same adjustment made to ordering as prior graph
+
+statement_rules <- list(
+  "1" = "1",
+  "2" = "2",
+  "4" = "3",
+  "5" = "4",
+  "3" = "5",
+  "8" = "8",
+  "9" = "9",
+  "-1" = "-1")
+
+r9_dupe <- recode_statements(r9_dupe, "Q24", statement_rules)
+r8_dupe <- recode_statements(r8_dupe, "Q24", statement_rules)
+r7_dupe <- recode_statements(r7_dupe, "Q30", statement_rules)
+r6_dupe <- recode_statements(r6_dupe, "Q32", statement_rules)
+r5_dupe <- recode_statements(r5_dupe, "Q34", statement_rules)
+```
+
+```{r}
+
+wave5 = table(r5_dupe$Q34) / sum(table(r5_dupe$Q34))
+wave6 = table(r6_dupe$Q32) / sum(table(r6_dupe$Q32))
+wave7 = table(r7_dupe$Q30) / sum(table(r7_dupe$Q30))
+wave8 = table(r8_dupe$Q24) / sum(table(r8_dupe$Q24))
+wave9 = table(r9_dupe$Q24) / sum(table(r9_dupe$Q24))
+
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+five <- c(as.numeric(wave5["5"]), as.numeric(wave6["5"]), 
+           as.numeric(wave7["5"]), as.numeric(wave8["5"]), as.numeric(wave9["5"]))
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double(), Five = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i], Five = five[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "1"
+rejone_melt[rejone_melt$variable == 'Four' | rejone_melt$variable == 'Five',]$Response <- "2"
+rejone_melt[rejone_melt$variable == 'Three',]$Response <- "No"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly agree with Statement 1", 
+                               "Agree with Statement 1", 
+                               "Agree with neither",
+                               "Agree with Statement 2",
+                               "Strongly agree with Statement 2"), 
+                      values = c("brown3", "tomato", "seashell3", "cornflowerblue", "royalblue4")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Responses to Choose leaders through elections (Statement 1) \nvs other methods (Statement 2) Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/leaders_over_time.png", bg = "white", dpi=700))
+```
+
+# president
+## performance
+
+```{r}
+r8_dupe <- subset(r8, !Q51A %in% c(8,9,-1)) # 1 2 3 4 
+r7_dupe <- subset(r7, !Q58A %in% c(8,9,-1)) # 1 2 3 4 
+r6_dupe <- subset(r6, !Q68A %in% c(8,9,-1)) # 1 2 3 4 
+r5_dupe <- subset(r5, !Q71A %in% c(8,9,-1)) # 1 2 3 4 
+
+wave5 = table(r5_dupe$Q71A) / sum(table(r5_dupe$Q71A))
+wave6 = table(r6_dupe$Q68A) / sum(table(r6_dupe$Q68A))
+wave7 = table(r7_dupe$Q58A) / sum(table(r7_dupe$Q58A))
+wave8 = table(r8_dupe$Q51A) / sum(table(r8_dupe$Q51A))
+
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "Disapprove"
+rejone_melt[rejone_melt$variable == 'Three' | rejone_melt$variable == 'Four',]$Response <- "Approve"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Strongly disapprove", 
+                                "Disapprove",
+                                "Approve",
+                                "Strongly Approve"), 
+                      values = c("brown3", "tomato", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Performance of President Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/president_performance_over_time.png", bg = "white", dpi=700))
+
+```
+
+## trust
+
+```{r}
+r9_dupe <- subset(r9, !Q37A %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q41A %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q43A %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q52A %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q59A %in% c(8,9,-1))
+
+wave5 = table(r5_dupe$Q59A) / sum(table(r5_dupe$Q59A))
+wave6 = table(r6_dupe$Q52A) / sum(table(r6_dupe$Q52A))
+wave7 = table(r7_dupe$Q43A) / sum(table(r7_dupe$Q43A))
+wave8 = table(r8_dupe$Q41A) / sum(table(r8_dupe$Q41A))
+wave9 = table(r9_dupe$Q37A) / sum(table(r9_dupe$Q37A))
+
+
+
+one <- c(as.numeric(wave5["1"]), as.numeric(wave6["1"]), 
+         as.numeric(wave7["1"]), as.numeric(wave8["1"]), as.numeric(wave9["1"]))
+two <- c(as.numeric(wave5["2"]), as.numeric(wave6["2"]), 
+         as.numeric(wave7["2"]), as.numeric(wave8["2"]), as.numeric(wave9["2"]))
+three <- c(as.numeric(wave5["3"]), as.numeric(wave6["3"]), 
+           as.numeric(wave7["3"]), as.numeric(wave8["3"]), as.numeric(wave9["3"]))
+four <- c(as.numeric(wave5["4"]), as.numeric(wave6["4"]), 
+           as.numeric(wave7["4"]), as.numeric(wave8["4"]), as.numeric(wave9["4"]))
+
+
+rejone <- data.frame(Wave = character(), One = double(), Two = double(), Three = double(), Four = double())
+for (i in 1:length(wave)) {
+  rejone <- rbind(rejone, data.frame(Wave = wave[i], One = one[i], Two = two[i], Three = three[i], Four = four[i]))
+}
+
+rejone_melt <- reshape2::melt(rejone, id.vars = "Wave")
+
+rejone_melt$Response <- ''
+rejone_melt[rejone_melt$variable == 'One' | rejone_melt$variable == 'Two',]$Response <- "No"
+rejone_melt[rejone_melt$variable == 'Three' | rejone_melt$variable == 'Four',]$Response <- "Yes"
+
+rejone_melt %>%
+  ggplot(aes(x = Response, y = value, fill = variable)) +
+  geom_bar(stat = 'identity', position = 'stack') +
+  facet_grid(~Wave, switch = "both",labeller = label_wrap_gen(width = 10)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="white", fill="white"),
+      axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  scale_fill_manual(labels = c("Not at all", 
+                                "Just a little",
+                                "Somewhat",
+                                "A lot"), 
+                      values = c("brown3", "tomato", "darkolivegreen3", "forestgreen")) +
+  guides(fill=guide_legend("Response")) +
+  labs(title = "Trust in President Over Time in Sudan",
+       y = "Proportion of Responses",
+       x = "Wave")
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/sudan/over time/president_trust_over_time.png", bg = "white", dpi=700))
+```
+
+
+
