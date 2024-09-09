@@ -1,0 +1,6 @@
+full_id,osm_id,osm_type,admin_level,type,name,boundary,_count,_sum,_mean
+r16059006,"16059006",relation,"6",boundary,Arrondissement Communal Niamey 3,administrative,55,1491.36825227737,27.1157864050432
+r16067253,"16067253",relation,"6",boundary,Arrondissement Communal Niamey 2,administrative,102,2394.48043417931,23.4752983743069
+r16067254,"16067254",relation,"6",boundary,Arrondissement Communal Niamey 4,administrative,173,5124.58615040779,29.6218852624728
+r16067274,"16067274",relation,"6",boundary,Arrondissement Communal Niamey 5,administrative,260,2346.57882428169,9.0253031703142
+r16067289,"16067289",relation,"6",boundary,Arrondissement Communal Niamey 1,administrative,110,3808.87450146675,34.6261318315159
