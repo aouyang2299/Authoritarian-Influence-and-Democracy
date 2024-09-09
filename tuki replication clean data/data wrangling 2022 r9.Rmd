@@ -1,0 +1,182 @@
+---
+title: "build data"
+output: html_document
+date: "2024-06-26"
+---
+
+```{r setup, include=FALSE}
+library(haven)
+library(ltm)
+library(tidyverse)
+```
+
+
+# load all wave 9 variables
+
+```{r}
+data = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r9_2022.sav")
+```
+
+```{r}
+new_data <- bind_cols(
+  RESP_NO = data$RESPNO,
+  REGION = data$REGION,
+  Q1 = data$Q1, # age
+  # extra
+  # Q4A = data$Q4A,
+  # Q4B = data$Q4B,
+  # Q5A = data$Q5A,
+  # depr
+  Q6A = data$Q6A,
+  Q6B = data$Q6B,
+  Q6C = data$Q6C,
+  Q6D = data$Q6D,
+  Q6E = data$Q6E,
+  # response
+  Q29B = data$Q29B,
+  Q37H = data$Q37H, # trust
+  # corr
+  Q38A = data$Q38A,
+  Q38B = data$Q38B,
+  Q38F = data$Q38F,
+  
+  Q84A = data$Q84A, # eth
+  Q94 = data$Q94, # edu
+  Q100 = data$Q100 # gender
+)
+# "Q1"             "Q4A"            "Q4B"            "Q5A"           
+#  [8] "Q6A"            "Q6B"            "Q6C"            "Q6D"            "Q6E"            
+# "Q29B"           "Q37H"          
+# [15] "Q38A"           "Q38B"           "Q38F"           "Q84A"           "Q94"            "Q100"           "vio_97_21"     
+# [22] "night_2020mean"
+
+
+```
+
+```{r}
+unique(new_data$REGION)
+```
+
+
+# load all violence data
+
+We consider all under event type:
+
+- Battles
+- Violence against civilians
+- Explosions/Remote violence
+
+from 1997 to 2021 
+
+we want to attach the total number of violent conflicts to each region in the original data
+
+
+```{r}
+violence = read.csv("/Users/andyouyang/Documents/research/tuki replication/Africa_1997-2024_Jun21.csv")
+```
+
+
+```{r}
+# narrows down the year range, event type and country 
+
+violence <- subset(violence, violence$year < 2022)
+# unique(violence$event_date)
+violence <- subset(violence, violence$event_type == "Battles" | 
+                             violence$event_type == "Violence against civilians" | 
+                             violence$event_type == "Explosions/Remote violence")
+unique(violence$event_type)
+violence <- subset(violence, violence$country == "Mali")
+```
+
+## matching the regions (9) to the violence dataset
+
+matches with wikipedia: 
+
+Bamako Capital District     509
+Gao Region                  507
+Kayes Region                501
+Kidal Region                508
+Koulikoro Region            502
+Mopti Region                505
+Ségou Region                504
+Sikasso Region              503
+Tombouctou Region           506
+
+501	KAYES			
+502	KOULIKORO			
+503	SIKASSO			
+504	SEGOU			
+505	MOPTI			
+506	TOMBOUCTOU			
+507	GAO			   + Menaka
+508	KIDAL			
+509	BAMAKO
+
+```{r}
+# unique(violence$location)
+# table(violence$location)
+table(violence$admin1)
+```
+
+```{r}
+new_data$vio_97_21[new_data$REGION == 509] <- 65
+new_data$vio_97_21[new_data$REGION == 508] <- 493
+new_data$vio_97_21[new_data$REGION == 507] <- 772 + 283 # Gao + Menaka
+new_data$vio_97_21[new_data$REGION == 506] <- 513
+new_data$vio_97_21[new_data$REGION == 505] <- 1783
+new_data$vio_97_21[new_data$REGION == 504] <- 378
+new_data$vio_97_21[new_data$REGION == 503] <- 80
+new_data$vio_97_21[new_data$REGION == 502] <- 77
+new_data$vio_97_21[new_data$REGION == 501] <- 51
+```
+
+```{r}
+unique(new_data$vio_97_21)
+```
+
+# nighttime light
+
+Nighttime light. This variable, which proxies economic development at the com-
+munal level, measures the mean annual nighttime light in the region where the respon-
+dents reside for the year 2020. Some studies have shown that nighttime light is a
+good proxy for economic development. The nighttime light index ranges from 0
+to 63, with higher values denoting a higher level of economic development and vice
+versa. Since the raw dataset is gridded, I computed the relevant statistics for the
+respective regions using QGIS software.
+
+mean annual nighttime light in the region in 2020
+
+501	KAYES			
+502	KOULIKORO			
+503	SIKASSO			
+504	SEGOU			
+505	MOPTI			
+506	TOMBOUCTOU			
+507	GAO		        (+ Menaka from gis data)
+508	KIDAL			
+509	BAMAKO
+
+```{r}
+new_data$night_2020mean[new_data$REGION == 509] <- 55.10761836120293 # bamako
+new_data$night_2020mean[new_data$REGION == 508] <- 0.003761738761336278 # kidal
+new_data$night_2020mean[new_data$REGION == 507] <- 0.008696207966718536 + 0.0004609012817408169
+new_data$night_2020mean[new_data$REGION == 506] <- 0.0023915081647602424 # tombouctou
+new_data$night_2020mean[new_data$REGION == 505] <- 0.031167408437528177 # mopti
+new_data$night_2020mean[new_data$REGION == 504] <- 0.08363276347844056 # segou
+new_data$night_2020mean[new_data$REGION == 503] <- 0.05711395955214011 # sikasso
+new_data$night_2020mean[new_data$REGION == 502] <- 0.23817656456054812 # koulikoro
+new_data$night_2020mean[new_data$REGION == 501] <- 0.0677829536032446 # kayes
+
+unique(new_data$night_2020mean)
+```
+
+
+```{r}
+new_data$year <- 2022
+```
+
+```{r}
+write.csv(new_data,"~/Documents/research/clean_mali_data.csv", row.names = FALSE)
+```
+
+
