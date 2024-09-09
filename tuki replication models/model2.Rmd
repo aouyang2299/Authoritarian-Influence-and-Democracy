@@ -1,0 +1,54 @@
+---
+title: "model 2"
+output: html_document
+date: "2024-07-06"
+---
+
+# model 2 - military intervention ~ deprivation index
+
+```{r setup, include=FALSE}
+library(haven)
+library(ltm)
+library(tidyverse)
+```
+
+## military
+
+```{r}
+data <- read.csv("~/Documents/research/clean_mali_data.csv")
+
+data$Q29B[data$Q29B == 9] <- NA
+data$Q29B[data$Q29B == 5] <- NA
+
+print(table(data$Q29B))
+
+data$military <- ifelse(data$Q29B %in% c(1, 2), 0,
+                        ifelse(data$Q29B %in% c(3, 4), 1, NA))
+
+print(table(data$military))
+```
+
+## deprivation
+
+```{r}
+data$Q29B[data$Q6A == 9] <- NA
+data$Q29B[data$Q6B == 9] <- NA
+data$Q29B[data$Q6C == 9] <- NA
+data$Q29B[data$Q6D == 9] <- NA
+data$Q29B[data$Q6E == 9] <- NA
+
+data$deprivation <- data$Q6A + data$Q6B + data$Q6C + data$Q6D + data$Q6E
+
+depr_cols <- bind_cols(data$Q6A, data$Q6B, data$Q6C, data$Q6D, data$Q6E)
+cronbach.alpha(depr_cols)
+
+data %>%
+  ggplot(aes(x = deprivation)) +
+  geom_bar()
+```
+
+```{r}
+r2 <- lm(Q29B ~ deprivation, data = data)
+summary(r2)
+AIC(r2)
+```

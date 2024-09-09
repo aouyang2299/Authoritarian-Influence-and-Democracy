@@ -1,0 +1,50 @@
+---
+title: "model 1"
+output: html_document
+date: "2024-07-06"
+---
+
+# model 1 - military intervention ~ corruption index
+
+```{r setup, include=FALSE}
+library(haven)
+library(ltm)
+library(tidyverse)
+```
+
+## military
+
+```{r}
+data <- read.csv("~/Documents/research/clean_mali_data.csv")
+
+data$Q29B[data$Q29B == 9] <- NA
+data$Q29B[data$Q29B == 5] <- NA
+
+print(table(data$Q29B))
+
+data$military <- ifelse(data$Q29B %in% c(1, 2), 0,
+                        ifelse(data$Q29B %in% c(3, 4), 1, NA))
+
+print(table(data$military))
+```
+
+## corruption
+
+```{r}
+data$Q38A[data$Q38A == 8] <- NA
+data$Q38A[data$Q38A == 9] <- NA
+
+data$Q38B[data$Q38B == 8] <- NA
+data$Q38B[data$Q38B == 9] <- NA
+
+data$Q38F[data$Q38F == 8] <- NA
+data$Q38F[data$Q38F == 9] <- NA
+
+data$corrupt = data$Q38A + data$Q38B + data$Q38F
+```
+
+```{r}
+r1 <- lm(Q29B ~ corrupt, data = data)
+summary(r1)
+AIC(r1)
+```

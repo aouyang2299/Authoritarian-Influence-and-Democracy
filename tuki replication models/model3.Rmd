@@ -1,0 +1,41 @@
+---
+title: "model 3"
+output: html_document
+date: "2024-07-06"
+---
+
+# model 3 - military intervention ~ political instability
+
+```{r setup, include=FALSE}
+library(haven)
+library(ltm)
+library(tidyverse)
+```
+
+## military
+
+```{r}
+data <- read.csv("~/Documents/research/clean_mali_data.csv")
+
+data$Q29B[data$Q29B == 9] <- NA
+data$Q29B[data$Q29B == 5] <- NA
+
+print(table(data$Q29B))
+
+data$military <- ifelse(data$Q29B %in% c(1, 2), 0,
+                        ifelse(data$Q29B %in% c(3, 4), 1, NA))
+
+print(table(data$military))
+```
+
+## political instability
+
+```{r}
+table(data$vio_97_21)
+```
+
+```{r}
+r3 <- lm(Q29B ~ vio_97_21, data = data)
+summary(r3)
+AIC(r3)
+```

@@ -1,0 +1,84 @@
+---
+title: "model 5"
+output: html_document
+date: "2024-07-06"
+---
+
+# model 5 - military intervention ~ corruption + deprivation + political + control variables
+
+```{r setup, include=FALSE}
+library(haven)
+library(ltm)
+library(tidyverse)
+```
+
+## military
+
+```{r}
+data <- read.csv("~/Documents/research/clean_mali_data.csv")
+
+data$Q29B[data$Q29B == 9] <- NA
+data$Q29B[data$Q29B == 5] <- NA
+
+print(table(data$Q29B))
+
+data$military <- ifelse(data$Q29B %in% c(1, 2), 0,
+                        ifelse(data$Q29B %in% c(3, 4), 1, NA))
+
+print(table(data$military))
+```
+
+## corruption
+
+```{r}
+data$Q38A[data$Q38A == 8] <- NA
+data$Q38A[data$Q38A == 9] <- NA
+
+data$Q38B[data$Q38B == 8] <- NA
+data$Q38B[data$Q38B == 9] <- NA
+
+data$Q38F[data$Q38F == 8] <- NA
+data$Q38F[data$Q38F == 9] <- NA
+
+data$corrupt = data$Q38A + data$Q38B + data$Q38F
+```
+
+## deprivation
+
+```{r}
+data$Q29B[data$Q6A == 9] <- NA
+data$Q29B[data$Q6B == 9] <- NA
+data$Q29B[data$Q6C == 9] <- NA
+data$Q29B[data$Q6D == 9] <- NA
+data$Q29B[data$Q6E == 9] <- NA
+
+data$deprivation <- data$Q6A + data$Q6B + data$Q6C + data$Q6D + data$Q6E
+
+depr_cols <- bind_cols(data$Q6A, data$Q6B, data$Q6C, data$Q6D, data$Q6E)
+cronbach.alpha(depr_cols)
+```
+
+## political instability
+
+```{r}
+table(data$vio_97_21)
+```
+
+## control
+
+```{r}
+# gender
+unique(data$Q100)
+data$Q100[data$Q100 == 2] <- 0
+unique(data$Q100)
+
+# trust in military
+data$Q37H[data$Q37H == 8] <- NA
+data$Q37H[data$Q37H == 9] <- NA
+```
+
+```{r}
+r5 <- lm(Q29B ~ corrupt + deprivation + vio_97_21 + Q1 + Q37H + Q100 + Q94 + night_2020mean, data = data)
+summary(r5)
+AIC(r5)
+```
