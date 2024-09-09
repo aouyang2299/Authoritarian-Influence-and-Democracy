@@ -1,0 +1,318 @@
+---
+title: "afrobarometer ethiopia"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-05-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(forcats)
+library(haven)
+library(stringr)
+```
+
+# Burkina Faso
+
+all warnings can be ignored
+
+```{r}
+r8 = read_sav("/Users/andyouyang/Documents/research/ethiopia/afbrobarometer_ethiopia_r8_2020.sav")
+```
+
+# Most Recent Round, Wave 8 (2020)
+
+## reject one party rule, military rule, one man rule
+```{r, warning = FALSE}
+# 1 = Strongly disapprove, 2 = Disapprove, 3 = Neither approve nor disapprove, 4 = Approve,
+# 5 = Strongly approve, 8 = Refused, 9 = Don’t know, -1 = Missing
+
+r8$Q20A <- factor(r8$Q20A)
+r8$Q20B <- factor(r8$Q20B)
+r8$Q20C <- factor(r8$Q20C)
+
+r8$Q20A <- fct_recode(r8$Q20A, 
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+r8$Q20B <- fct_recode(r8$Q20B,
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+r8$Q20C <- fct_recode(r8$Q20C, 
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q20A %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q20A)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving One Party Rule in \nEthiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/one party rule.png", bg = "white", dpi=700))
+
+subset(r8, !Q20B %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q20B)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving Military Rule in \nEthiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/military rule.png", bg = "white", dpi=700))
+
+subset(r8, !Q20C %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q20C)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving One Man Rule in \nEthiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/one man rule.png", bg = "white", dpi=700))
+
+```
+
+## support for democracy, extent of democracy, and satisfaction of democracy
+
+```{r}
+r8$Q21 <- factor(r8$Q21)
+unique(r8$Q21)
+
+r8$Q21 <- fct_recode(r8$Q21, 
+             "Doesn’t matter" = "1", 
+             "Sometimes non-democratic preferable" = "2", 
+             "Democracy preferable" = "3", 
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q21 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q21)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Support for Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses Towards Supporting Democracy in \nEthiopia 2020")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/democracy support.png", bg = "white", dpi=700))
+
+```
+
+             
+```{r}
+r8$Q36 <- factor(r8$Q36)
+unique(r8$Q36)
+
+r8$Q36 <- fct_recode(r8$Q36,
+             "Not a democracy" = "1",
+             "Democracy, with major problems" = "2",
+             "Democracy, but with minor problems" = "3",
+             "Full democracy" = "4",
+             "Do not understand question/what democracy is" = "8",
+             "Don't Know" = "9",
+             "Refused" = "98",
+             "Missing" = "-1")
+
+subset(r8, !Q36 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q36)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Extent of Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses to the Extent of Democracy in Ethiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/democracy extent.png", bg = "white", dpi=700))
+
+```
+
+```{r}
+r8$Q37 <- factor(r8$Q37)
+unique(r8$Q37)
+
+r8$Q37 <- fct_recode(r8$Q37,
+             "Not a democracy" = "0",
+             "Not at all satisfied" = "1",
+             "Not very satisfied" = "2",
+             "Fairly satisfied" = "3",
+             "Very satisfied" = "4",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q37 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q37)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Satisfaction of Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Satisfaction of Democracy in Ethiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/democracy satisfaction.png", bg = "white", dpi=700))
+
+# 0= not a democracy, 1=Not at all satisfied, 2=Not very satisfied, 3=Fairly satisfied,
+# 4=Very satisfied, 8=Refused, 9=Don’t know, -1=Missing
+```
+
+## Govt gets things done vs. Govt accountable to citizens
+
+```{r}
+
+r8$Q22 <- factor(r8$Q22)
+unique(r8$Q22)
+
+r8$Q22 <- fct_recode(r8$Q22,
+             "Strongly agree with Statement 1" = "1", 
+             "Agree with Statement 1" = "2", 
+             "Agree with Statement 2" = "3",
+             "Strongly agree with Statement 2" = "4",
+             "Agree with neither" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q22 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q22)) +
+  geom_bar(fill = "forestgreen") +
+  labs(x = "Agreement to Statements",
+       y = "Number of Responses",
+       title = "Distribution of Responses to government gets things done (Statement 1) vs. \naccountable to citizens (Statement 2) in Ethiopia 2020",
+       subtitle = "Full Question: Question: Which of the following statements is closest to your view? \nStatement 1: It is more important to have a government that can get things done, even if we \nhave no influence over what it does. \nStatement 2: It is more important for citizens to be able to hold government accountable, even \nif that means it makes decisions more slowly.") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/govt.png", bg = "white", dpi=700))
+
+# 1=Strongly agree with Statement 1, 2=Agree with Statement 1, 3=Agree with Statement 2,
+# 4=Strongly agree with Statement 2, 5=Agree with neither, 8=Refused, 9=Don’t know, -1=Missing
+```
+
+## Choose leaders through elections vs. other methods
+
+```{r}
+r8$Q24 <- factor(r8$Q24)
+unique(r8$Q24)
+
+r8$Q24 <- fct_recode(r8$Q24,
+             "Strongly agree with Statement 1" = "1", 
+             "Agree with Statement 1" = "2", 
+             "Agree with Statement 2" = "3",
+             "Strongly agree with Statement 2" = "4",
+             "Agree with neither" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q24 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q24)) +
+  geom_bar(fill = "forestgreen") +
+  labs(x = "Agreement to Statements",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Choose leaders through elections (Statement 1) \nvs other methods (Statement 2) in Ethiopia 2020",
+       subtitle = "Which of the following statements is closest to your view? \nStatement 1: We should choose our leaders in this country through regular, open and honest \nelections. \nStatement 2: Since elections sometimes produce bad results, we should adopt other methods for \nchoosing this country’s leaders.") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/leaders.png", bg = "white", dpi=700))
+
+```
+
+## performance of president 
+
+```{r}
+r8$Q51A <- factor(r8$Q51A)
+
+r8$Q51A <- fct_recode(r8$Q51A,
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Approve" = "3",
+             "Strongly approve" = "4",
+             "Refused" = "8",
+             "Don’t know/Haven’t heard enough" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q51A %in% c("Refused", "Don’t know/Haven’t heard enough", "Missing")) %>%
+  ggplot(aes(x = Q51A)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Performance of President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Trust in President in Ethiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/president performance.png", bg = "white", dpi=700))
+
+```
+
+## trust in president 
+
+```{r}
+r8$Q41A <- factor(r8$Q41A)
+
+# 0=Not at all, 1=Just a little, 2=Somewhat, 3=A lot
+
+r8$Q41A <- fct_recode(r8$Q41A,
+             "Not at all" = "0",
+             "Just a little" = "1",
+             "Somewhat" = "2",
+             "A lot" = "3",
+             "Refused" = "8",
+             "Don’t know/Haven’t heard enough" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q41A %in% c("Refused", "Don’t know/Haven’t heard enough", "Missing")) %>%
+  ggplot(aes(x = Q41A)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Trust in President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Trust in President in Ethiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15))
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/president trust.png", bg = "white", dpi=700))
+
+```
+
+
+## voted in last election
+
+```{r}
+r8$Q13 <- factor(r8$Q13)
+
+r8$Q13 <- fct_recode(r8$Q13,
+             "I did not vote" = "0",
+             "I was too young to vote" = "1",
+             "I can’t remember whether I voted" = "2",
+             "I voted in the election" = "3",
+             "Refused" = "8",
+             "Don’t know" = "9",
+             "Missing" = "-1")
+
+subset(r8, !Q13 %in% c("Refused", "Don’t know", "Missing")) %>%
+  ggplot(aes(x = Q13)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Trust in President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Trust in President in Ethiopia 2020") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/ethiopia/most recent/voted in last election.png", bg = "white", dpi=700))
+
+```
