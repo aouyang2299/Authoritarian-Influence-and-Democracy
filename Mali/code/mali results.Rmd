@@ -1,0 +1,919 @@
+---
+title: "afrobarometer burkina faso"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-05-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(forcats)
+library(haven)
+library(stringr)
+library(foreign)
+```
+
+# Mali
+
+all warnings can be ignored
+
+```{r, warning = FALSE}
+r1 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r1_2001.sav")
+r2 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r2_2002.sav")
+r3 = read.spss("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r3_2005.sav", to.data.frame = TRUE)
+# r3 formatting is not encoded as numbers when read from the file
+r4 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r4_2008.sav")
+r5 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r5_2013.sav")
+r6 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r6_2015.sav")
+r7 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r7_2017.sav")
+r8 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r8_2021.sav")
+r9 = read_sav("/Users/andyouyang/Documents/research/Mali/data/afrobarometer_mli_r9_2022.sav")
+
+years <- c("Round 1 (2001)", "Round 2 (2002)", "Round 3 (2005)", "Round 4 (2008)", 
+          "Round 5 (2013)", "Round 6 (2015)", "Round 7 (2017)", "Round 8 (2021)", "Round 9 (2022)")
+
+```
+
+# Over Time
+
+## reject one party rule, military rule, one man rule
+
+```{r}
+r3$Q36A <- fct_recode(r3$Q36A,
+          "1" = "Fortement en désaccord",
+          "2" = "En désaccord",
+          "3" = "Ni en accord ni en désaccord",
+          "4" = "D'accord",
+          "5" = "Fortement  d'accord",
+          "8" = "Refusé de répondre",
+          "9" = "Ne sais pas",
+          "-1" = "Missing")
+
+r3$Q36B <- fct_recode(r3$Q36B, 
+          "1" = "Fortement en désaccord",
+          "2" = "En désaccord",   
+          "3" = "Ni en accord ni en désaccord",
+          "4" = "D'accord",
+          "5" = "Fortement  d'accord",    
+          "8" = "Refusé de répondre",
+          "9" = "Ne sais pas",
+          "-1" = "Missing")
+
+r3$Q36C <- fct_recode(r3$Q36C, 
+          "1" = "Fortement en désaccord",
+          "2" = "En désaccord",   
+          "3" = "Ni en accord ni en désaccord",
+          "4" = "D'accord",
+          "5" = "Fortement  d'accord",    
+          "8" = "Refusé de répondre",
+          "9" = "Ne sais pas",
+          "-1" = "Missing")
+table(r3$Q36A)
+
+r3$Q36A <- as.numeric(as.character(r3$Q36A))
+r3$Q36B <- as.numeric(as.character(r3$Q36B))
+r3$Q36C <- as.numeric(as.character(r3$Q36C))
+
+table(r3$Q36A)
+```
+
+
+```{r}
+# get rid of refused, dont know, missing
+r9_dupe <- subset(r9, !Q22A %in% c(8,9,-1))
+r9_dupe <- subset(r9, !Q22B %in% c(8,9,-1))
+r9_dupe <- subset(r9, !Q22C %in% c(8,9,-1))
+
+r8_dupe <- subset(r8, !Q20A %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q20B %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q20C %in% c(8,9,-1))
+
+r7_dupe <- subset(r7, !Q27A %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q27B %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q27C %in% c(8,9,-1))
+
+r6_dupe <- subset(r6, !Q28A %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q28B %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q28C %in% c(8,9,-1))
+
+r5_dupe <- subset(r5, !Q31A %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q31B %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q31C %in% c(8,9,-1))
+
+r4_dupe <- subset(r4, !Q29A %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q29B %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q29C %in% c(8,9,-1))
+
+r3_dupe <- subset(r3, !Q36A %in% c(8,9,-1))
+print(table(r3_dupe$Q36A))
+
+r3_dupe <- subset(r3, !Q36B %in% c(8,9,-1))
+print(table(r3_dupe$Q36B))
+
+r3_dupe <- subset(r3, !Q36C %in% c(8,9,-1))
+print(table(r3_dupe$Q36C))
+
+r2_dupe <- subset(r2, !q35a %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q35c %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q35d %in% c(8,9,-1))
+
+r1_dupe <- subset(r1, !Q41B %in% c(8,9,-1))
+# r1_dupe <- subset(r1, !rejmil %in% c(8,9,-1))
+# r1_dupe <- subset(r1, !rejdic %in% c(8,9,-1))
+
+# double check the excluded vals when using r1 r2 and r3
+
+rejone_bk <- c(
+               mean(r1_dupe$Q41B), mean(r2_dupe$q35a), mean(r3_dupe$Q36A),
+               mean(r4_dupe$Q29A), mean(r5_dupe$Q31A), mean(r6_dupe$Q28A), 
+               mean(r7_dupe$Q27A), mean(r8_dupe$Q20A), mean(r9_dupe$Q22A))
+
+print(rejone_bk)
+rejmil_bk <- c(
+               mean(r2_dupe$q35c), mean(r3_dupe$Q36B),
+               mean(r4_dupe$Q29B), mean(r5_dupe$Q31B), mean(r6_dupe$Q28B), 
+               mean(r7_dupe$Q27B), mean(r8_dupe$Q20B), mean(r9_dupe$Q22B))
+rejdic_bk <- c(
+               mean(r2_dupe$q35d), mean(r3_dupe$Q36C),
+               mean(r4_dupe$Q29C), mean(r5_dupe$Q31C), mean(r6_dupe$Q28C), 
+               mean(r7_dupe$Q27C), mean(r8_dupe$Q20C), mean(r9_dupe$Q22C))
+
+rejone_df <- data.frame(Year = years, AverageResponse = rejone_bk)
+rejone_df %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "sienna1") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Approval to One Party Rule Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is strongly disapprove, 2 is disapprove, 3 is neither, \n 4 is appprove, 5 is strongly approve") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) 
+
+off_one <- c("Round 2 (2002)", "Round 3 (2005)", "Round 4 (2008)", 
+          "Round 5 (2013)", "Round 6 (2015)", "Round 7 (2017)", "Round 8 (2021)", "Round 9 (2022)")
+
+rejmil_df <- data.frame(Year = off_one, AverageResponse = rejmil_bk)
+rejmil_df %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "sienna1") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Approval to Military Rule Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is strongly disapprove, 2 is disapprove, 3 is neither, \n 4 is appprove, 5 is strongly approve")  +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+rejdic_df <- data.frame(Year = off_one, AverageResponse = rejdic_bk)
+rejdic_df %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "sienna1") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Approval to One Man Rule Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is strongly disapprove, 2 is disapprove, 3 is neither, \n 4 is appprove, 5 is strongly approve") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+```
+
+
+## support for democracy, extent of democracy, and satisfaction of democracy
+
+```{r}
+r3$Q37 <- fct_recode(r3$Q37, 
+             "1" = "Peu importe le type de gouvernement que nous avons",  # does not matter
+             "2" = "Souvent, Gouvernement non démocratique préférable",  # sometimes non demo
+             "3" = "Démocratie préférable à toute autre forme de gouvernement",  # demo preferable
+             "8" = "Refusé de répondre", 
+             "9" = "Ne sais pas",
+             "-1" = "Missing")
+r3$Q37 <- as.numeric(as.character(r3$Q37))
+```
+
+```{r}
+r9_dupe <- subset(r9, !Q23 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q21 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q28 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q30 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q32 %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q30 %in% c(8,9,-1))
+
+r3_dupe <- subset(r3, !Q37 %in% c(8,9,-1))
+(table(r3_dupe$Q37))
+
+r2_dupe <- subset(r2, !q38 %in% c(8,9,-1))
+r1_dupe <- subset(r1, !Q34 %in% c(8,9,-1))
+
+
+support <- c(mean(r1_dupe$Q34), mean(r2_dupe$q38), mean(r3_dupe$Q37),
+             mean(r4_dupe$Q30), mean(r5_dupe$Q32), mean(r6_dupe$Q30), 
+             mean(r7_dupe$Q28), mean(r8_dupe$Q21), mean(r9_dupe$Q23))
+data.frame(Year = years, AverageResponse = support) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Support for Democracy Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is does not matter, 2 is sometimes non-democratic preferable, \n3 is democracy preferable") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+  
+(table(r3_dupe$Q37))
+
+```
+
+
+```{r}
+r3$Q46 <- fct_recode(r3$Q46, 
+             "1" = "Pas une démocratie",  # not a demo
+             "2" = "Une démocratie avec des problèmes majeurs",  # demo major prob
+             "3" = "Une démocratie mais avec des problèmes mineurs",  # demo minor prob
+             "4" = "Une pleine démocratie", # demo                        
+             "8" = "Ne comprend pas la question (ne pas lire)", # did not understand demo/q
+             "98" = "Refusé de répondre", 
+             "9" = "Ne sais pas",
+             "-1" = "Missing")
+          
+r3$Q46 <- as.numeric(as.character(r3$Q46))
+
+r9_dupe <- subset(r9, !Q30 %in% c(8,9,98,-1))
+r8_dupe <- subset(r8, !Q36 %in% c(8,9,98,-1))
+r7_dupe <- subset(r7, !Q35 %in% c(8,9,98,-1))
+r6_dupe <- subset(r6, !Q40 %in% c(8,9,98,-1))
+r5_dupe <- subset(r5, !Q42 %in% c(8,9,98,-1))
+r4_dupe <- subset(r4, !Q42A %in% c(8,9,98,-1))
+r3_dupe <- subset(r3, !Q46 %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q37 %in% c(8,9,-1))
+r1_dupe <- subset(r1, !Q33 %in% c(8,9,-1))
+
+extent <- c(mean(r1_dupe$Q33), mean(r2_dupe$q37), mean(r3_dupe$Q46),
+            mean(r4_dupe$Q42A), mean(r5_dupe$Q42), mean(r6_dupe$Q40), 
+             mean(r7_dupe$Q35), mean(r8_dupe$Q36), mean(r9_dupe$Q30))
+data.frame(Year = years, AverageResponse = extent) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Extent of Democracy Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is not a democracy, 2 is a democracy with major problems, \n3 is democracy with minor problems, 4 is full democracy") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+(table(r3_dupe$Q46))
+```
+
+
+```{r}
+r3$Q47 <- fct_recode(r3$Q47, 
+             "0" = "Le Mali n'est pas une démocratie", # not a demo
+             "1" = "Pas du tout satisfait", # not
+             "2" = "Pas très satisfait", # not very
+             "3" = "Plutôt satisfait", # fairly                        
+             "4" = "Très satisfait", # very
+             "8" = "Refusé de répondre", 
+             "9" = "Ne sais pas",
+             "-1" = "Missing")
+
+r3$Q47 <- as.numeric(as.character(r3$Q47))
+
+r9_dupe <- subset(r9, !Q31 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q37 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q36 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q41 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q43 %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q43 %in% c(8,9,-1))
+r3_dupe <- subset(r3, !Q47 %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q40 %in% c(8,9,-1))
+r1_dupe <- subset(r1, !Q44 %in% c(8,9,-1))
+
+satisfaction <- c(mean(r1_dupe$Q44), mean(r2_dupe$q40), mean(r3_dupe$Q47),
+                  mean(r4_dupe$Q43), mean(r5_dupe$Q43), mean(r6_dupe$Q41), 
+                  mean(r7_dupe$Q36), mean(r8_dupe$Q37), mean(r9_dupe$Q31))
+data.frame(Year = years, AverageResponse = satisfaction) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Satisfaction for Democracy Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 0 is not a democracy, 1 is not at all satisfied, 2 is not very satisfied, \n3 is fairly satified, 4 is very satisfied") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+```
+
+
+## Govt gets things done vs. Govt accountable to citizens
+
+```{r}
+r9_dupe <- subset(r9, !Q18 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q22 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q29 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q31 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q33 %in% c(8,9,-1))
+# r4_dupe <- subset(r4, !Q43 %in% c(8,9,-1)) # question not in wave 4
+# does not exist for r4 and previous waves
+
+recode_statements <- function(data, col, recode_rules) {
+  data[[col]] <- factor(data[[col]])
+  data[[col]] <- fct_recode(data[[col]], !!!recode_rules)
+  data[[col]] <- as.numeric(as.character(data[[col]]))
+  return(data)
+}
+
+# adjustment made to ordering
+# final ordering is as follows
+# 1 - strongly agree with statement 1
+# 2 - agree with statement 1
+# 3 - agree with neither (neutral)
+# 4 - agree with statement 2
+# 5 - strongly agree with statement 2
+
+statement_rules <- list(
+  "1" = "1",
+  "2" = "2",
+  "4" = "3",
+  "5" = "4",
+  "3" = "5",
+  "8" = "8",
+  "9" = "9",
+  "-1" = "-1")
+
+r9_dupe <- recode_statements(r9_dupe, "Q18", statement_rules)
+r8_dupe <- recode_statements(r8_dupe, "Q22", statement_rules)
+r7_dupe <- recode_statements(r7_dupe, "Q29", statement_rules)
+r6_dupe <- recode_statements(r6_dupe, "Q31", statement_rules)
+r5_dupe <- recode_statements(r5_dupe, "Q33", statement_rules)
+
+
+govt <- c(mean(r5_dupe$Q33), mean(r6_dupe$Q31), 
+          mean(r7_dupe$Q29), mean(r8_dupe$Q22), mean(r9_dupe$Q18))
+govt
+
+data.frame(Year = c("Round 5 (2012)", "Round 6 (2015)", "Round 7 (2018)", "Round 8 (2021)", "Round 9 (2022)"), AverageResponse = govt) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "seagreen") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to government gets things done (Statement 1) vs. \naccountable to citizens (Statement 2) Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is strongly agree with statement 1, 2 is agree with statement 1, \n3 is agree with neither, 4 is agree with statement 2, 5 is strongly agree with statement 2") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+```
+
+## Choose leaders through elections vs. other methods
+
+
+```{r}
+
+r3$Q38 <- fct_recode(r3$Q38, 
+             "1" = "Très fortement d'accord avec A", # strong agree 1
+             "2" = "D'accord avec A", # agree 1
+             "3" = "D'accord avec B", # agree 2
+             "4" = "Très fortement d'accord avec B", # strong agree 2                 
+             "5" = "D'accord avec aucune", # agree w none
+             "8" = "Refusé de répondre", 
+             "9" = "Ne sais pas",
+             "-1" = "Missing")
+
+r3$Q38 <- as.numeric(as.character(r3$Q38))
+
+r9_dupe <- subset(r9, !Q24 %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q24 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q30 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q32 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q34 %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q31 %in% c(8,9,-1)) 
+r3_dupe <- subset(r3, !Q38 %in% c(8,9,-1))
+(table(r3_dupe$Q38))
+r2_dupe <- subset(r2, !q30 %in% c(8,9,-1))
+# does not exist for r1
+
+recode_statements <- function(data, col, recode_rules) {
+  data[[col]] <- factor(data[[col]])
+  data[[col]] <- fct_recode(data[[col]], !!!recode_rules)
+  data[[col]] <- as.numeric(as.character(data[[col]]))
+  return(data)
+}
+
+# same adjustment made to ordering as prior graph
+
+statement_rules <- list(
+  "1" = "1",
+  "2" = "2",
+  "4" = "3",
+  "5" = "4",
+  "3" = "5",
+  "8" = "8",
+  "9" = "9",
+  "-1" = "-1")
+
+r9_dupe <- recode_statements(r9_dupe, "Q24", statement_rules)
+r8_dupe <- recode_statements(r8_dupe, "Q24", statement_rules)
+r7_dupe <- recode_statements(r7_dupe, "Q30", statement_rules)
+r6_dupe <- recode_statements(r6_dupe, "Q32", statement_rules)
+r5_dupe <- recode_statements(r5_dupe, "Q34", statement_rules)
+r4_dupe <- recode_statements(r4_dupe, "Q31", statement_rules)
+r3_dupe <- recode_statements(r5_dupe, "Q38", statement_rules)
+r2_dupe <- recode_statements(r2_dupe, "q30", statement_rules)
+
+govt <- c(mean(r2_dupe$q30), mean(r3_dupe$Q38),
+          mean(r4_dupe$Q31), mean(r5_dupe$Q34), mean(r6_dupe$Q32), 
+          mean(r7_dupe$Q30), mean(r8_dupe$Q24), mean(r9_dupe$Q24))
+govt
+(table(r3_dupe$Q38))
+print("r7")
+(table(r7_dupe$Q30))
+
+data.frame(Year = off_one, AverageResponse = govt) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "seagreen") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Choose leaders through elections (Statement 1) \nvs other methods (Statement 2) Over Time in Mali",
+       subtitle = "The y-axis scale is as follows: 1 is strongly agree with statement 1, 2 is agree with statement 1, \n3 is agree with neither, 4 is agree with statement 2, 5 is strongly agree with statement 2") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+(table(r3_dupe$Q38))
+```
+
+
+## performance of president, trust president
+
+```{r}
+r3$Q68A <- fct_recode(r3$Q68A, 
+           "1" = "Désapprouve fortement", 
+           "2" = "Désapprouve", 
+           "3" = "Approuve", 
+           "4" = "Approuve fortement",
+           "9" = "Ne sais pas / N'en ai pas entendu",
+           "8" = "Refusé de répondre", 
+           "-1" = "Missing")
+
+r3$Q68A <- as.numeric(as.character(r3$Q68A))
+
+r9_dupe <- subset(r9, !Q47A %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q51A %in% c(8,9,-1)) # 1 2 3 4 
+r7_dupe <- subset(r7, !Q58A %in% c(8,9,-1)) # 1 2 3 4 
+r6_dupe <- subset(r6, !Q68A %in% c(8,9,-1)) # 1 2 3 4 
+r5_dupe <- subset(r5, !Q71A %in% c(8,9,-1)) # 1 2 3 4 
+r4_dupe <- subset(r4, !Q70A %in% c(8,9,-1)) # 1 2 3 4
+r3_dupe <- subset(r3, !Q68A %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q48a %in% c(8,9,-1))
+r1_dupe <- subset(r1, !Q74F %in% c(8,9,-1))
+
+table(r3_dupe$Q68A)
+# 1=Strongly disapprove, 2=Disapprove, 3=Approve, 4=Strongly approve
+
+perf <- c(mean(r1_dupe$Q74F), mean(r2_dupe$q48a), mean(r3_dupe$Q68A),
+             mean(r4_dupe$Q70A), mean(r5_dupe$Q71A), mean(r6_dupe$Q68A), 
+             mean(r7_dupe$Q58A), mean(r8_dupe$Q51A), mean(r9_dupe$Q47A))
+
+data.frame(Year = years, AverageResponse = perf) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Performance of President in Mali Over Time",
+       subtitle = "The y-axis scale is as follows: 1 is strongly disapprove, 2 is disapprove, 3 is approve,\n4 is strongly approve")+
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+# [1] 2.991457 3.214905 !!! 3.385048 !!! 
+# 2.681739 2.494865 2.861204 2.656276 2.153586 3.521555
+table(r3_dupe$Q68A)
+
+```
+
+
+```{r}
+
+r3$Q55A <- fct_recode(r3$Q55A, 
+           "0" = "Pas du tout", 
+           "1" = "Juste un peu", 
+           "2" = "Quelque peu", 
+           "3" = "Beaucoup",
+           "9" = "Ne sais pas / n'en ai pas entendu",
+           "8" = "Refusé de répondre", 
+           "-1" = "Missing")
+             
+r3$Q55A <- as.numeric(as.character(r3$Q55A))
+
+r9_dupe <- subset(r9, !Q37A %in% c(8,9,-1))
+r8_dupe <- subset(r8, !Q41A %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q43A %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q52A %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q59A %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q49A %in% c(8,9,-1))
+r3_dupe <- subset(r3, !Q55A %in% c(8,9,-1))
+r2_dupe <- subset(r2, !q43a %in% c(8,9,-1))
+r1_dupe <- subset(r1, !Q47E %in% c(8,9,-1))
+
+# 0=Not at all, 1=Just a little, 2=Somewhat, 3=A lot
+
+trust <- c(mean(r1_dupe$Q47E), mean(r2_dupe$q43a), mean(r3_dupe$Q55A),
+             mean(r4_dupe$Q49A), mean(r5_dupe$Q59A), mean(r6_dupe$Q52A), 
+             mean(r7_dupe$Q43A), mean(r8_dupe$Q41A), mean(r9_dupe$Q37A))
+data.frame(Year = years, AverageResponse = trust) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Afrobarometer Round Number & Year",
+       y = "Average Response",
+       title = "Average Response to Trust in President in Mali Over Time",
+       subtitle = "The y-axis scale is as follows: 0 is not at all, 1 is just a little, 2 is somewhat, 3 is a lot") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+# 4.663987
+table(r3_dupe$Q55A)
+```
+
+## voted in last election
+
+```{r}
+r3$Q30 <- fct_recode(r3$Q30, 
+            "-1" = "Missing" ,                                 
+            "1" = "Vous aviez voté aux élections" ,  # voted             
+            "2" = "Vous aviez décidé de ne pas voter",         
+            "3" = "Vous ne pouviez pas trouver le bureau de vote",
+            "4" = "Vous étiez empêché de voter",           
+            "5" = "Vous n'aviez pas le temps de voter",          
+            "6" = "Vous n'aviez pas voté pour d'autres raisons",   
+            "7" = "Vous n'étiez pas inscrit",         
+            "9" = "Ne sais pas / ne se rapelle pas",      
+            "98" = "Refusé de répondre")
+             
+r3$Q30 <- as.numeric(as.character(r3$Q30))
+
+r9_dupe <- subset(r9, !Q13 %in% c(8,9,-1)) 
+r8_dupe <- subset(r8, !Q13 %in% c(8,9,-1))
+r7_dupe <- subset(r7, !Q22 %in% c(8,9,-1))
+r6_dupe <- subset(r6, !Q21 %in% c(8,9,-1))
+r5_dupe <- subset(r5, !Q27 %in% c(8,9,-1))
+r4_dupe <- subset(r4, !Q23D %in% c(8,9,-1))
+r3_dupe <- subset(r3, !Q30 %in% c(8,9,-1))
+# no r2 question equivalent
+r1_dupe <- subset(r1, !Q71A %in% c(8,9,-1))
+
+# 0=I did not vote, 1=I was too young to vote, 2=I can’t remember whether I voted, 3=I voted in
+# the election
+# for r8 and r9
+
+perf <- c( sum(r1_dupe$Q71A == 1) / length(r1_dupe$Q71A), sum(r3_dupe$Q30 == 1) / length(r3_dupe$Q30),
+             sum(r4_dupe$Q23D == 1) / length(r4_dupe$Q23D), sum(r5_dupe$Q27 == 1) / length(r5_dupe$Q27), 
+             sum(r6_dupe$Q21 == 1) / length(r6_dupe$Q21), sum(r7_dupe$Q22 == 1) / length(r7_dupe$Q22), 
+             sum(r8_dupe$Q13 == 3) / length(r8_dupe$Q13), sum(r9_dupe$Q13 == 3) / length(r9_dupe$Q13))
+
+years2 <- c("Wave 1 (2001)", "Wave 3 (2005)", "Wave 4 (2008)", 
+          "Wave 5 (2013)", "Wave 6 (2015)", "Wave 7 (2017)", "Wave 8 (2021)", "Wave 9 (2022)")
+data.frame(Year = years2, AverageResponse = perf) %>%
+  ggplot(aes(x = Year, y = AverageResponse)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Wave",
+       y = "Percentage of People",
+       title = "Percentage of People Who Voted in the Last Election in Mali Over Time") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10))
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/over time/voted last election over time.png", bg = "white", dpi=700))
+```
+
+# Most Recent Round, Wave 9 (2022)
+
+## reject one party rule, military rule, one man rule
+```{r, warning = FALSE}
+
+# 1 = Strongly disapprove, 2 = Disapprove, 3 = Neither approve nor disapprove, 4 = Approve,
+# 5 = Strongly approve, 8 = Refused, 9 = Don’t know, -1 = Missing
+
+r9$Q22A <- factor(r9$Q22A)
+r9$Q22B <- factor(r9$Q22B)
+r9$Q22C <- factor(r9$Q22C)
+
+r9$Q22A <- fct_recode(r9$Q22A, 
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+r9$Q22B <- fct_recode(r9$Q22B,
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+r9$Q22C <- fct_recode(r9$Q22C, 
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Neither approve nor disapprove" = "3", 
+             "Approve" = "4",
+             "Strongly approve" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q22A %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q22A)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving One Party Rule in \nMali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/one party rule.png", bg = "white", dpi=700))
+
+subset(r9, !Q22B %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q22B)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving Military Rule in \nMali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/military rule.png", bg = "white", dpi=700))
+
+subset(r9, !Q22C %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q22C)) +
+  geom_bar(fill = "coral") +
+  labs(x = "Scale of Approval",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Approving/Disapproving One Man Rule in \nMali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/one man rule.png", bg = "white", dpi=700))
+```
+
+## support for democracy, extent of democracy, and satisfaction of democracy
+
+```{r}
+r9$Q23 <- factor(r9$Q23)
+unique(r9$Q23)
+
+r9$Q23 <- fct_recode(r9$Q23, 
+             "Doesn’t matter" = "1", 
+             "Sometimes non-democratic preferable" = "2", 
+             "Democracy preferable" = "3", 
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q23 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q23)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Support for Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses Towards Supporting Democracy in \nMali 2022")
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/democracy support.png", bg = "white", dpi=700))
+
+```
+
+             
+```{r}
+r9$Q30 <- factor(r9$Q30)
+unique(r9$Q30)
+
+r9$Q30 <- fct_recode(r9$Q30,
+             "Not a democracy" = "1",
+             "Democracy, with major problems" = "2",
+             "Democracy, but with minor problems" = "3",
+             "Full democracy" = "4",
+             "Do not understand question/what democracy is" = "8",
+             "Don't Know" = "9",
+             "Refused" = "98",
+             "Missing" = "-1")
+
+subset(r9, !Q30 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q30)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Support for Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses to the Extent of Democracy in Mali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/democracy extent.png", bg = "white", dpi=700))
+```
+
+```{r}
+r9$Q31 <- factor(r9$Q31)
+unique(r9$Q31)
+
+r9$Q31 <- fct_recode(r9$Q31,
+             "Not a democracy" = "0",
+             "Not at all satisfied" = "1",
+             "Not very satisfied" = "2",
+             "Fairly satisfied" = "3",
+             "Very satisfied" = "4",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q31 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q31)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Satisfaction of Democracy",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Satisfaction of Democracy in Mali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/democracy satisfaction.png", bg = "white", dpi=700))
+
+# 0= not a democracy, 1=Not at all satisfied, 2=Not very satisfied, 3=Fairly satisfied,
+# 4=Very satisfied, 8=Refused, 9=Don’t know, -1=Missing
+```
+
+## Govt gets things done vs. Govt accountable to citizens
+
+```{r}
+
+r9$Q18 <- factor(r9$Q18)
+unique(r9$Q18)
+
+r9$Q18 <- fct_recode(r9$Q18,
+             "Strongly agree with Statement 1" = "1", 
+             "Agree with Statement 1" = "2", 
+             "Agree with Statement 2" = "3",
+             "Strongly agree with Statement 2" = "4",
+             "Agree with neither" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q18 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q18)) +
+  geom_bar(fill = "forestgreen") +
+  labs(x = "Agreement to Statements",
+       y = "Number of Responses",
+       title = "Distribution of Responses to government gets things done (Statement 1) vs. \naccountable to citizens (Statement 2) in Mali 2022",
+       subtitle = "Full Question: Question: Which of the following statements is closest to your view? \nStatement 1: It is more important to have a government that can get things done, even if we \nhave no influence over what it does. \nStatement 2: It is more important for citizens to be able to hold government accountable, even \nif that means it makes decisions more slowly.") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/govt.png", bg = "white", dpi=700))
+
+
+# 1=Strongly agree with Statement 1, 2=Agree with Statement 1, 3=Agree with Statement 2,
+# 4=Strongly agree with Statement 2, 5=Agree with neither, 8=Refused, 9=Don’t know, -1=Missing
+```
+
+## Choose leaders through elections vs. other methods
+
+```{r}
+r9$Q24 <- factor(r9$Q24)
+unique(r9$Q24)
+
+r9$Q24 <- fct_recode(r9$Q24,
+             "Strongly agree with Statement 1" = "1", 
+             "Agree with Statement 1" = "2", 
+             "Agree with Statement 2" = "3",
+             "Strongly agree with Statement 2" = "4",
+             "Agree with neither" = "5",
+             "Refused" = "8",
+             "Don't Know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q24 %in% c("Refused", "Don't Know", "Missing")) %>%
+  ggplot(aes(x = Q24)) +
+  geom_bar(fill = "forestgreen") +
+  labs(x = "Agreement to Statements",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Choose leaders through elections (Statement 1) \nvs other methods (Statement 2) in Mali 2022",
+       subtitle = "Which of the following statements is closest to your view? \nStatement 1: We should choose our leaders in this country through regular, open and honest \nelections. \nStatement 2: Since elections sometimes produce bad results, we should adopt other methods for \nchoosing this country’s leaders.") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/leaders.png", bg = "white", dpi=700))
+
+```
+## performance of president 
+
+```{r}
+r9$Q47A <- factor(r9$Q47A)
+
+r9$Q47A <- fct_recode(r9$Q47A,
+             "Strongly disapprove" = "1", 
+             "Disapprove" = "2", 
+             "Approve" = "3",
+             "Strongly approve" = "4",
+             "Refused" = "8",
+             "Don’t know/Haven’t heard enough" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q47A %in% c("Refused", "Don’t know/Haven’t heard enough", "Missing")) %>%
+  ggplot(aes(x = Q47A)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Performance of President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Performance of President in Mali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/president performance.png", bg = "white", dpi=700))
+```
+
+## trust in president 
+
+```{r}
+r9$Q37A <- factor(r9$Q37A)
+
+# 0=Not at all, 1=Just a little, 2=Somewhat, 3=A lot
+
+r9$Q37A <- fct_recode(r9$Q37A,
+             "Not at all" = "0",
+             "Just a little" = "1",
+             "Somewhat" = "2",
+             "A lot" = "3",
+             "Refused" = "8",
+             "Don’t know/Haven’t heard enough" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q37A %in% c("Refused", "Don’t know/Haven’t heard enough", "Missing")) %>%
+  ggplot(aes(x = Q37A)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Trust in President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Trust in President in Mali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/president trust.png", bg = "white", dpi=700))
+
+```
+
+## voted in last election
+
+```{r}
+r9$Q13 <- factor(r9$Q13)
+
+r9$Q13 <- fct_recode(r9$Q13,
+             "I did not vote" = "0",
+             "I was too young to vote" = "1",
+             "I can’t remember whether I voted" = "2",
+             "I voted in the election" = "3",
+             "Refused" = "8",
+             "Don’t know" = "9",
+             "Missing" = "-1")
+
+subset(r9, !Q13 %in% c("Refused", "Don’t know", "Missing")) %>%
+  ggplot(aes(x = Q13)) +
+  geom_bar(fill = "cornflowerblue") +
+  labs(x = "Trust in President",
+       y = "Number of Responses",
+       title = "Distribution of Responses to Voted in Last Election in Mali 2022") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) 
+
+suppressMessages(ggsave("/Users/andyouyang/Documents/research/Mali/most recent/voted in last election.png", bg = "white", dpi=700))
+
+```
+
+# not used
+
+```{r, warning = FALSE}
+recode_reject <- function(data, col, recode_rules) {
+  data[[col]] <- factor(data[[col]])
+  data[[col]] <- fct_recode(data[[col]], !!!recode_rules)
+  return(data)
+}
+
+reject_rules <- list(
+   "Strongly disapprove" = "1", 
+   "Disapprove" = "2", 
+   "Neither approve nor disapprove" = "3", 
+   "Approve" = "4",
+   "Strongly approve" = "5",
+   "Refused" = "8",
+   "Don't Know" = "9",
+   "Missing" = "-1")
+
+# r9 <- recode_reject(r9, "Q22A", reject_rules)
+# r9 <- recode_reject(r9, "Q22B", reject_rules)
+# r9 <- recode_reject(r9, "Q22C", reject_rules)
+
+r8 <- recode_reject(r8, "Q20A", reject_rules)
+r8 <- recode_reject(r8, "Q20B", reject_rules)
+r8 <- recode_reject(r8, "Q20C", reject_rules)
+
+r7 <- recode_reject(r7, "Q27A", reject_rules)
+r7 <- recode_reject(r7, "Q27B", reject_rules)
+r7 <- recode_reject(r7, "Q27C", reject_rules)
+
+r6 <- recode_reject(r6, "Q28A", reject_rules)
+r6 <- recode_reject(r6, "Q28B", reject_rules)
+r6 <- recode_reject(r6, "Q28C", reject_rules)
+
+r5 <- recode_reject(r5, "Q31A", reject_rules)
+r5 <- recode_reject(r5, "Q31B", reject_rules)
+r5 <- recode_reject(r5, "Q31C", reject_rules)
+
+r4 <- recode_reject(r4, "Q29A", reject_rules)
+r4 <- recode_reject(r4, "Q29B", reject_rules)
+r4 <- recode_reject(r4, "Q29C", reject_rules)
+
+# r3 <- recode_reject(r3, "Q36A", reject_rules)
+# r3 <- recode_reject(r3, "Q36B", reject_rules)
+# r3 <- recode_reject(r3, "Q36C", reject_rules)
+# 
+# r2 <- recode_reject(r2, "Q35A", reject_rules)
+# r2 <- recode_reject(r2, "Q35C", reject_rules)
+# r2 <- recode_reject(r2, "Q35D", reject_rules)
+# 
+# r1 <- recode_reject(r1, "rejone", reject_rules)
+# r1 <- recode_reject(r1, "rejmil", reject_rules)
+# r1 <- recode_reject(r1, "rejdic", reject_rules)
+```
+
+
